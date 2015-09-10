@@ -21,7 +21,7 @@
 
   <groupId>us.juggl</groupId>
   <artifactId>juggl-raffle</artifactId>
-  <version>1.1</version>
+  <version>1.2-SNAPSHOT</version>
   
   <properties>
     <inceptionYear>2015</inceptionYear>
