@@ -125,6 +125,9 @@
             <h_copyrightOwner>${copyrightOwner}</h_copyrightOwner>
           </properties>
           <strictCheck>true</strictCheck>
+          <excludes>
+            <exclude>src/main/resources/webroot/assets/jquery-2.1.4.min</exclude>
+          </excludes>
         </configuration>
         <executions>
           <execution>
