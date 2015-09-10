@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+  <head>
+    <title>TODO supply a title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="assets/raffle.css" rel="stylesheet" />
+    <script src="assets/jquery-2.1.4.min.js"></script>
+    <script>
+<!--
+function addEntry() {
+  // Get form elements and send them via ReST request to the API
+  var data = JSON.stringify({
+    "given_name": document.getElementById("given_name").value,
+    "family_name": document.getElementById("family_name").value
+  });
+  var fullName = document.getElementById("family_name").value+", "+document.getElementById("given_name").value;
+  $.ajax({
+    type: "PUT",
+    contentType: "application/json; charset=utf8",
+    url: window.location.origin+"/rest/entry",
+    data: data,
+    success: function(data, status, req) { 
+      showNotification("Entry added for: "+fullName);
+      document.getElementById("given_name").value = null;
+      document.getElementById("family_name").value = null;
+      document.getElementById("given_name").focus();
+    },
+    error: function(req, status, err) { 
+      showNotification("Failed to add entry for: "+fullName+": "+err); console.log(status+": "+err); 
+    }
+  });
+}
+
+function getWinner() {
+  // Make a request via ReST to the backend API to get a randomly selected winner!
+  $.ajax({
+    type: "GET",
+    url: window.location.origin+"/rest/winner",
+    success: function(data, status, req) {
+      showNotification("The Winner Is "+data.full_name+"!!!");
+    },
+    error: function(req, status, err) {
+      console.log(status+": "+err);
+    }
+  });
+}
+
+function showNotification(message) {
+  var noticeArea = document.getElementById("notifications");
+  var topElement = noticeArea.childNodes[0];
+  var notice = document.createElement("div");
+  notice.innerHTML = message;
+  noticeArea.insertBefore(notice, topElement);
+}
+
+var forEach = function (array, callback, scope) {
+  for (var i = 0; i < array.length; i++) {
+    callback.call(scope, i, array[i]); // passes back stuff we need
+  }
+};
+
+var fadeNotifications = function() {
+  var noticeArea = document.getElementById("notifications");
+  forEach(noticeArea.childNodes, function(index, child) {
+    var current = child.style.opacity;
+    if (current==="") {
+      current = 1;
+    }
+    child.style.opacity= current - 0.02;
+    if (child.style.opacity<=0) {
+      noticeArea.removeChild(child);
+    }
+  });
+};
+
+setInterval(fadeNotifications, 100);
+// -->
+    </script>
+  </head>
+  <body>
+    <div class="title">JUGGL Raffle</div>
+    <div class="form">
+      <input class="text_input" type="text" id="given_name" placeholder="Given Name" autofocus/>
+      <input class="text_input" type="text" id="family_name" placeholder="Family Name" onchange="addEntry()"/>
+      <button title="Submit Entry" onclick="addEntry()">Enter Raffle</button>
+    </div>
+    <div class="notifications" id="notifications"></div>
+    <button class="winner" title="Get Winner" onClick="getWinner()">Winner</button>
+  </body>
+</html>

@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - preConditions:
+    - runningAs:
+        username: SA
+
+  - changeSet:
+      id: 1
+      author: dphillips
+      changes:
+        - createTable:
+            tableName: person
+            columns:
+              - column:
+                  name: given_name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: family_name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: varchar(200)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+  - changeSet:
+      id: 2
+      author: dphillips
+      changes:
+        - 
