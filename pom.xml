@@ -109,7 +109,7 @@
                 </transformer>
               </transformers>
               <artifactSet></artifactSet>
-              <outputFile>${project.build.directory}/juggl-raffle-${project.version}-fat.jar</outputFile>
+              <outputFile>${project.build.directory}/juggl-raffle.jar</outputFile>
             </configuration>
           </execution>
         </executions>
