@@ -16,10 +16,12 @@
 package us.juggl.raffle;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.RunTestOnContext;
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -28,47 +30,51 @@ import org.junit.runner.RunWith;
  */
 @RunWith(io.vertx.ext.unit.junit.VertxUnitRunner.class)
 public class MainTest {
-    @Rule
-    public RunTestOnContext rule = new RunTestOnContext();
+    private Vertx vertx;
 
-    @Test
-    public void testAddValidEntry(TestContext context) throws Exception {
-        Vertx vertx = rule.vertx();
-        Main main = new Main();
-        final Async async = context.async();
-        vertx.deployVerticle(main, event -> {
-            vertx.createHttpClient().put(8080, "localhost", "/rest/entry").handler(response -> {
-                context.assertNotNull(response);
-                async.complete();
-            }).end("{\"given_name\": \"Deven\", \"family_name\": \"Phillips\"}");
-        });
-    }
-    @Test
-    public void testGetWinner(TestContext context) throws Exception {
-        Vertx vertx = rule.vertx();
-        Main main = new Main();
-        final Async async = context.async();
-        vertx.deployVerticle(main, event -> {
-            vertx.createHttpClient().put(8080, "localhost", "/rest/entry").handler(response -> {
-                context.assertNotNull(response);
-                vertx.createHttpClient().get(8080, "localhost", "/rest/winner").handler(resp -> {
-                    context.assertNotNull(resp);
-                    async.complete();
-                }).end();
-            }).end("{\"given_name\": \"Deven\", \"family_name\": \"Phillips\"}");
-        });
+    @Before
+    public void setUp() throws Exception {
+        vertx = Vertx.vertx();
+        vertx.deployVerticle(new Main());
     }
 
     @Test
-    public void testAddInvalidEntry(TestContext context) throws Exception {
-        Vertx vertx = rule.vertx();
-        Main main = new Main();
+    public void testAddValidEntry(TestContext context) {
         final Async async = context.async();
-        vertx.deployVerticle(main, event -> {
-            vertx.createHttpClient().put(8080, "localhost", "/rest/entry").handler(response -> {
-                context.assertNotNull(response);
-                async.complete();
-            }).end("{\"given_nOME\": \"Deven\", \"family_nOME\": \"Phillips\"}");
+        HttpClient client = vertx.createHttpClient();
+        HttpClientRequest req = client.put(8080, "127.0.0.1", "/rest/entry");
+        req.handler((HttpClientResponse response) -> {
+            context.assertNotNull(response);
+            context.assertTrue(response.statusCode()==202);
+            async.complete();
         });
+        req.exceptionHandler(exception -> {
+            context.fail(exception.getLocalizedMessage());
+            async.complete();
+        });
+        req.end("{\"given_name\": \"Deven\", \"family_name\": \"Phillips\"}");
+    }
+    @Test
+    public void testGetWinner(TestContext context) {
+        final Async async = context.async();
+        vertx.createHttpClient().put(8080, "localhost", "/rest/entry").handler(response -> {
+            context.assertNotNull(response);
+            vertx.createHttpClient().get(8080, "localhost", "/rest/winner").handler(resp -> {
+                context.assertNotNull(resp);
+                async.complete();
+            }).end();
+        }).end("{\"given_name\": \"Deven\", \"family_name\": \"Phillips\"}");
+    }
+
+    @Test
+    public void testAddInvalidEntry(TestContext context) {
+        final Async async = context.async();
+        HttpClient client = vertx.createHttpClient();
+        HttpClientRequest req = client.put(8080, "localhost", "/rest/entry");
+        req.handler(response -> {
+            context.assertNotNull(response);
+            async.complete();
+        });
+        req.end("{\"given_nOME\": \"Deven\", \"family_nOME\": \"Phillips\"}");
     }
 }
