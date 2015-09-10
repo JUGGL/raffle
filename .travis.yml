@@ -6,3 +6,5 @@ deploy:
   file: target/juggl-raffle.jar
   on:
     repo: JUGGL/raffle
+jdk:
+  - oraclejdk8
