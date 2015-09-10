@@ -1,4 +1,4 @@
-# JUGGL Raffle
+# JUGGL Raffle [![Build Status](https://travis-ci.org/JUGGL/raffle.svg)](https://travis-ci.org/JUGGL/raffle)
 
 ## Overview
 
