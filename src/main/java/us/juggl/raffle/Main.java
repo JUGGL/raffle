@@ -74,13 +74,24 @@ public class Main extends AbstractVerticle {
 
     @Override
     public void start() throws Exception {
+        LOG.info("Starting Main Verticle");
         Router r = Router.router(vertx);
         r.route().handler(BodyHandler.create());
         r.get("/rest/winner").produces(JSON).blockingHandler(this::getWinner);
         r.put("/rest/entry").consumes(JSON).produces(JSON).blockingHandler(this::addEntry);
         r.route().handler(StaticHandler.create("webroot"));
         
-        HttpServer server = vertx.createHttpServer().requestHandler(r::accept).listen(8080, "0.0.0.0");
+        HttpServer server = vertx
+                                .createHttpServer()
+                                .requestHandler(r::accept)
+                                .listen(9080, "0.0.0.0", result -> {
+                                    if (result.succeeded()) {
+                                        LOG.info("HTTP Server started");
+                                    } else {
+                                        LOG.error("HTTP Server failed to start", result.cause());
+                                    }
+                                });
+        LOG.info("Main verticle started");
     }
 
     /**
@@ -119,12 +130,18 @@ public class Main extends AbstractVerticle {
 
         try (Connection c = ds.getConnection();
             PreparedStatement s = c.prepareStatement(INSERT_ENTRY)) {
-            body.put("full_name", body.getString("family_name")+", "+body.getString("given_name"));
-            s.setString(1, body.getString("given_name"));
-            s.setString(2, body.getString("family_name"));
-            s.setString(3, body.getString("full_name"));
-            s.executeUpdate();
-            sendResponse(rc, 202, "Accepted", body);
+            if (body.getString("family_name")!=null && body.getString("given_name")!=null) {
+                body.put("full_name", body.getString("family_name")+", "+body.getString("given_name"));
+                s.setString(1, body.getString("given_name"));
+                s.setString(2, body.getString("family_name"));
+                s.setString(3, body.getString("full_name"));
+                s.executeUpdate();
+                sendResponse(rc, 202, "Accepted", body);
+            } else {
+                JsonObject result = new JsonObject();
+                result.put("error", "Request MUST provide 'given_name' and 'family_name' in the JSON body.");
+                sendResponse(rc, 400, "Bad Request", result);
+            }
         } catch (SQLException sqle) {
             JsonObject result = new JsonObject();
             result.put("error", sqle.getLocalizedMessage());

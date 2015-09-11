@@ -21,6 +21,7 @@ import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,44 +36,76 @@ public class MainTest {
     @Before
     public void setUp() throws Exception {
         vertx = Vertx.vertx();
-        vertx.deployVerticle(new Main());
+        Main main = new Main();
+        vertx.deployVerticle(main);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        vertx.close();
+        System.out.println("Vert.x Shutdown");
     }
 
     @Test
     public void testAddValidEntry(TestContext context) {
         final Async async = context.async();
         HttpClient client = vertx.createHttpClient();
-        HttpClientRequest req = client.put(8080, "127.0.0.1", "/rest/entry");
+        HttpClientRequest req = client.putAbs("http://localhost:9080/rest/entry");
+        req.putHeader("Content-Type", "application/json");
+        req.putHeader("Accept", "*/*");
         req.handler((HttpClientResponse response) -> {
             context.assertNotNull(response);
-            context.assertTrue(response.statusCode()==202);
+            context.assertTrue(response.statusCode() == 202);
             async.complete();
         });
         req.exceptionHandler(exception -> {
             context.fail(exception.getLocalizedMessage());
             async.complete();
         });
-        req.end("{\"given_name\": \"Deven\", \"family_name\": \"Phillips\"}");
+        req.end("{\"given_name\": \"Lacy\", \"family_name\": \"Davis\"}");
     }
     @Test
     public void testGetWinner(TestContext context) {
         final Async async = context.async();
-        vertx.createHttpClient().put(8080, "localhost", "/rest/entry").handler(response -> {
+        HttpClient client = vertx.createHttpClient();
+        HttpClientRequest req = client.putAbs("http://localhost:9080/rest/entry");
+        req.putHeader("Content-Type", "application/json");
+        req.putHeader("Accept", "*/*");
+        req.handler(response -> {
             context.assertNotNull(response);
-            vertx.createHttpClient().get(8080, "localhost", "/rest/winner").handler(resp -> {
-                context.assertNotNull(resp);
-                async.complete();
-            }).end();
-        }).end("{\"given_name\": \"Deven\", \"family_name\": \"Phillips\"}");
+            vertx.createHttpClient()
+                    .get(9080, "localhost", "/rest/winner")
+                    .putHeader("Accept", "*/*")
+                    .handler(resp -> {
+                        context.assertNotNull(resp);
+                        async.complete();
+                    })
+                    .exceptionHandler(err -> {
+                        context.fail(err.getLocalizedMessage());
+                        async.complete();
+                    })
+                    .end();
+        });
+        req.exceptionHandler(err -> {
+            context.fail(err.getLocalizedMessage());
+            async.complete();
+        });
+        req.end("{\"given_name\": \"Deven\", \"family_name\": \"Phillips\"}");
     }
 
     @Test
     public void testAddInvalidEntry(TestContext context) {
         final Async async = context.async();
         HttpClient client = vertx.createHttpClient();
-        HttpClientRequest req = client.put(8080, "localhost", "/rest/entry");
+        HttpClientRequest req = client.putAbs("http://localhost:9080/rest/entry");
+        req.putHeader("Content-Type", "application/json");
+        req.putHeader("Accept", "*/*");
         req.handler(response -> {
             context.assertNotNull(response);
+            async.complete();
+        });
+        req.exceptionHandler(err -> {
+            context.fail(err.getLocalizedMessage());
             async.complete();
         });
         req.end("{\"given_nOME\": \"Deven\", \"family_nOME\": \"Phillips\"}");
