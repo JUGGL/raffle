@@ -46,7 +46,7 @@ public class Main extends AbstractVerticle {
     private static final String JSON = "application/json";
     
     private final JDBCDataSource ds;
-    private final Logger LOG;
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     /**
      * Entrypoint for the application.
@@ -61,7 +61,6 @@ public class Main extends AbstractVerticle {
      * @throws Exception
      */
     public Main() throws Exception {
-        LOG = LoggerFactory.getLogger(this.getClass());
         ds = new JDBCDataSource();
         ds.setDatabase("jdbc:hsqldb:mem:raffle");
         ds.setUser("SA");
