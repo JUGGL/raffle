@@ -48,10 +48,18 @@ public class Main extends AbstractVerticle {
     private final JDBCDataSource ds;
     private final Logger LOG;
 
+    /**
+     * Entrypoint for the application.
+     * @param args Command-line arguments
+     */
     public static void main(String... args) throws Exception {
         Vertx.vertx().deployVerticle(new Main());
     }
 
+    /**
+     * Initialize the main portions of the application and set up the DataSource
+     * @throws Exception
+     */
     public Main() throws Exception {
         LOG = LoggerFactory.getLogger(this.getClass());
         ds = new JDBCDataSource();
@@ -74,7 +82,12 @@ public class Main extends AbstractVerticle {
         
         HttpServer server = vertx.createHttpServer().requestHandler(r::accept).listen(8080, "0.0.0.0");
     }
-    
+
+    /**
+     * Handler for GET requests to the '/rest/winner' URL. Returns a randomly selected person from the database in JSON
+     * format.
+     * @param rc The {@link RoutingContext} for the incoming request.
+     */
     private void getWinner(final RoutingContext rc) {
         JsonObject result = new JsonObject();
         try (Connection c = ds.getConnection();
@@ -96,6 +109,10 @@ public class Main extends AbstractVerticle {
         }
     }
 
+    /**
+     * Handler for the PUT requests to '/rest/entry'. Adds a new entry to the Person table.
+     * @param rc The {@link RoutingContext} for the incoming request.
+     */
     private void addEntry(final RoutingContext rc) {
         JsonObject body = rc.getBodyAsJson();
         LOG.debug("BODY: "+body.encodePrettily());
@@ -115,6 +132,13 @@ public class Main extends AbstractVerticle {
         }
     }
 
+    /**
+     * Sends the appropriate response using the {@link RoutingContext}'s {@link io.vertx.core.http.HttpServerResponse}
+     * @param rc The {@link RoutingContext} for the incoming request.
+     * @param code The HTTP status code to be set
+     * @param msg The HTTP status message to be set
+     * @param body The {@link JsonObject} to be serialized and send as the response body.
+     */
     private void sendResponse(RoutingContext rc, int code, String msg, JsonObject body) {
                 rc
                     .response()
