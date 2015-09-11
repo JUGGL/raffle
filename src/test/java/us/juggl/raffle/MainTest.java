@@ -67,6 +67,19 @@ public class MainTest {
     @Test
     public void testGetWinner(TestContext context) {
         final Async async = context.async();
+        vertx.createHttpClient()
+                .get(9080, "localhost", "/rest/winner")
+                .putHeader("Accept", "*/*")
+                .handler(resp -> {
+                    context.assertNotNull(resp);
+                    context.assertEquals(resp.statusCode(), 404);
+                    async.complete();
+                })
+                .exceptionHandler(err -> {
+                    context.fail(err.getLocalizedMessage());
+                    async.complete();
+                })
+                .end();
         HttpClient client = vertx.createHttpClient();
         HttpClientRequest req = client.putAbs("http://localhost:9080/rest/entry");
         req.putHeader("Content-Type", "application/json");

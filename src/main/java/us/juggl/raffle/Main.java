@@ -34,6 +34,7 @@ import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.hsqldb.jdbc.JDBCDataSource;
 
@@ -44,23 +45,20 @@ public class Main extends AbstractVerticle {
     private static final String SELECT_WINNER = "SELECT p.given_name, p.family_name, p.full_name FROM person p ORDER BY RAND() LIMIT 1";
     private static final String INSERT_ENTRY = "INSERT INTO person (given_name, family_name, full_name) VALUES (?, ?, ?)";
     private static final String JSON = "application/json";
+    private static final String GIVEN = "given_name";
+    private static final String FAMILY = "family_name";
+    private static final String FULL = "full_name";
+    private static final String ERROR = "error";
     
     private final JDBCDataSource ds;
     private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     /**
-     * Entrypoint for the application.
-     * @param args Command-line arguments
-     */
-    public static void main(String... args) throws Exception {
-        Vertx.vertx().deployVerticle(new Main());
-    }
-
-    /**
      * Initialize the main portions of the application and set up the DataSource
-     * @throws Exception
+     * @throws LiquibaseException If there is a problem setting the database schema
+     * @throws SQLException If there is a problem configuring the DataSource
      */
-    public Main() throws Exception {
+    public Main() throws LiquibaseException, SQLException {
         ds = new JDBCDataSource();
         ds.setDatabase("jdbc:hsqldb:mem:raffle");
         ds.setUser("SA");
@@ -69,6 +67,16 @@ public class Main extends AbstractVerticle {
             .findCorrectDatabaseImplementation(new JdbcConnection(ds.getConnection()));
         Liquibase l = new Liquibase("liquibase.yml", new ClassLoaderResourceAccessor(), db);
         l.update((String) null);
+    }
+
+    /**
+     * Entrypoint for the application.
+     * @param args Command-line arguments
+     * @throws LiquibaseException If there is a problem setting the database schema
+     * @throws SQLException If there is a problem configuring the DataSource
+     */
+    public static void main(String... args) throws LiquibaseException, SQLException {
+        Vertx.vertx().deployVerticle(new Main());
     }
 
     @Override
@@ -80,16 +88,16 @@ public class Main extends AbstractVerticle {
         r.put("/rest/entry").consumes(JSON).produces(JSON).blockingHandler(this::addEntry);
         r.route().handler(StaticHandler.create("webroot"));
         
-        HttpServer server = vertx
-                                .createHttpServer()
-                                .requestHandler(r::accept)
-                                .listen(9080, "0.0.0.0", result -> {
-                                    if (result.succeeded()) {
-                                        LOG.info("HTTP Server started");
-                                    } else {
-                                        LOG.error("HTTP Server failed to start", result.cause());
-                                    }
-                                });
+        vertx
+            .createHttpServer()
+            .requestHandler(r::accept)
+            .listen(9080, "0.0.0.0", result -> {
+                if (result.succeeded()) {
+                    LOG.info("HTTP Server started");
+                } else {
+                    LOG.error("HTTP Server failed to start", result.cause());
+                }
+            });
         LOG.info("Main verticle started");
     }
 
@@ -104,16 +112,16 @@ public class Main extends AbstractVerticle {
             Statement s = c.createStatement();
             ResultSet r = s.executeQuery(SELECT_WINNER)) {
             if (r.isFirst() || r.next()) {
-                result.put("given_name", r.getString("given_name"));
-                result.put("family_name", r.getString("family_name"));
-                result.put("full_name", r.getString("full_name"));
+                result.put(GIVEN, r.getString(GIVEN));
+                result.put(FAMILY, r.getString(FAMILY));
+                result.put(FULL, r.getString(FULL));
                 sendResponse(rc, 200, "OK", result);
             } else {
-                result.put("error", "No results");
+                result.put(ERROR, "No results");
                 sendResponse(rc, 404, "Not Found", result);
             }
         } catch (SQLException sqle) {
-            result.put("error", sqle.getLocalizedMessage());
+            result.put(ERROR, sqle.getLocalizedMessage());
             sendResponse(rc, 500, "Server Error", result);
             LOG.error("Error getting winner from DB", sqle);
         }
@@ -129,21 +137,22 @@ public class Main extends AbstractVerticle {
 
         try (Connection c = ds.getConnection();
             PreparedStatement s = c.prepareStatement(INSERT_ENTRY)) {
-            if (body.getString("family_name")!=null && body.getString("given_name")!=null) {
-                body.put("full_name", body.getString("family_name")+", "+body.getString("given_name"));
-                s.setString(1, body.getString("given_name"));
-                s.setString(2, body.getString("family_name"));
-                s.setString(3, body.getString("full_name"));
+            if (body.getString(FAMILY)!=null && body.getString(GIVEN)!=null) {
+                body.put(FULL, body.getString(FAMILY)+", "+body.getString(GIVEN));
+                s.setString(1, body.getString(GIVEN));
+                s.setString(2, body.getString(FAMILY));
+                s.setString(3, body.getString(FULL));
                 s.executeUpdate();
                 sendResponse(rc, 202, "Accepted", body);
             } else {
                 JsonObject result = new JsonObject();
-                result.put("error", "Request MUST provide 'given_name' and 'family_name' in the JSON body.");
+                result.put(ERROR, "Request MUST provide 'given_name' and 'family_name' in the JSON body.");
                 sendResponse(rc, 400, "Bad Request", result);
             }
         } catch (SQLException sqle) {
+            LOG.error("SQLException", sqle);
             JsonObject result = new JsonObject();
-            result.put("error", sqle.getLocalizedMessage());
+            result.put(ERROR, sqle.getLocalizedMessage());
             sendResponse(rc, 400, "Bad Request", result);
         }
     }
