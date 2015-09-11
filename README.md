@@ -7,7 +7,7 @@ can select a winner at random from the entries.
 
 ## Current Status
 
-3 - Beta
+5 - Production
 
 ## Prerequisites
 
@@ -19,11 +19,11 @@ can select a winner at random from the entries.
 ```
 git clone git@github.com:JUGGL/raffle.git
 cd raffle
-mvn clean package
+mvn clean package capsule:build
 ```
 
 ## Running The Application
 
 ```
-java -jar target/juggl-raffle-<VERSION>-fat.jar
+java -jar target/juggl-raffle-<VERSION>-capsule-fat.jar
 ```
