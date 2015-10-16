@@ -86,7 +86,7 @@ public class Main extends AbstractVerticle {
         r.route().handler(BodyHandler.create());
         r.get("/rest/winner").produces(JSON).blockingHandler(this::getWinner);
         r.put("/rest/entry").consumes(JSON).produces(JSON).blockingHandler(this::addEntry);
-        r.route().handler(StaticHandler.create("webroot"));
+        r.route().handler(StaticHandler.create("webroot").setIndexPage("index.html"));
         
         vertx
             .createHttpServer()

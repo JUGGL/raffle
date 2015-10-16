@@ -64,6 +64,7 @@ public class MainTest {
         });
         req.end("{\"given_name\": \"Lacy\", \"family_name\": \"Davis\"}");
     }
+
     @Test
     public void testGetWinner(TestContext context) {
         final Async async = context.async();
@@ -72,7 +73,7 @@ public class MainTest {
                 .putHeader("Accept", "*/*")
                 .handler(resp -> {
                     context.assertNotNull(resp);
-                    context.assertEquals(resp.statusCode(), 404);
+                    context.assertEquals(resp.statusCode(), 200);
                     async.complete();
                 })
                 .exceptionHandler(err -> {
