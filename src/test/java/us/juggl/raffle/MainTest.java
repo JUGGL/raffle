@@ -26,10 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-
 /**
  * Created by dphillips on 9/10/15.
  */
@@ -37,9 +33,6 @@ import java.sql.Statement;
 public class MainTest {
     private Vertx vertx;
     private Main main;
-    private Connection conn;
-    private Statement st;
-    private ResultSet rs;
 
     @Before
     public void setUp() throws Exception {
