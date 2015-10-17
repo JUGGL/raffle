@@ -15,7 +15,6 @@
 #    limitations under the License.
 #
 
-
 function coverageFilePath { echo "target/site/cobertura/coverage.xml"; }
 
 PROJECT_TOKEN=${CODACY_PROJECT_TOKEN}
