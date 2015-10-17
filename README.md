@@ -1,4 +1,4 @@
-# JUGGL Raffle [![Build Status](https://travis-ci.org/JUGGL/raffle.svg)](https://travis-ci.org/JUGGL/raffle)
+# JUGGL Raffle [![Build Status](https://travis-ci.org/JUGGL/raffle.svg)](https://travis-ci.org/JUGGL/raffle) [![Codacy Badge](https://api.codacy.com/project/badge/3f24e372dc434caaa26dfe8a01408a80)](https://www.codacy.com/app/deven-phillips/Raffle)
 
 ## Overview
 
