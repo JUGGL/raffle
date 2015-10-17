@@ -26,18 +26,27 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 /**
  * Created by dphillips on 9/10/15.
  */
 @RunWith(io.vertx.ext.unit.junit.VertxUnitRunner.class)
 public class MainTest {
     private Vertx vertx;
+    private Main main;
+    private Connection conn;
+    private Statement st;
+    private ResultSet rs;
 
     @Before
     public void setUp() throws Exception {
         vertx = Vertx.vertx();
-        Main main = new Main();
+        main = new Main();
         vertx.deployVerticle(main);
+        Thread.sleep(500);
     }
 
     @After
@@ -73,7 +82,7 @@ public class MainTest {
                 .putHeader("Accept", "*/*")
                 .handler(resp -> {
                     context.assertNotNull(resp);
-                    context.assertEquals(resp.statusCode(), 200);
+                    context.assertEquals(resp.statusCode(), 404);
                     async.complete();
                 })
                 .exceptionHandler(err -> {

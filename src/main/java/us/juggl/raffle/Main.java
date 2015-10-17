@@ -106,7 +106,7 @@ public class Main extends AbstractVerticle {
      * format.
      * @param rc The {@link RoutingContext} for the incoming request.
      */
-    private void getWinner(final RoutingContext rc) {
+    void getWinner(final RoutingContext rc) {
         JsonObject result = new JsonObject();
         try (Connection c = ds.getConnection();
             Statement s = c.createStatement();
@@ -131,7 +131,7 @@ public class Main extends AbstractVerticle {
      * Handler for the PUT requests to '/rest/entry'. Adds a new entry to the Person table.
      * @param rc The {@link RoutingContext} for the incoming request.
      */
-    private void addEntry(final RoutingContext rc) {
+    void addEntry(final RoutingContext rc) {
         JsonObject body = rc.getBodyAsJson();
         LOG.debug("BODY: "+body.encodePrettily());
 
@@ -164,7 +164,7 @@ public class Main extends AbstractVerticle {
      * @param msg The HTTP status message to be set
      * @param body The {@link JsonObject} to be serialized and send as the response body.
      */
-    private void sendResponse(RoutingContext rc, int code, String msg, JsonObject body) {
+    void sendResponse(RoutingContext rc, int code, String msg, JsonObject body) {
                 rc
                     .response()
                     .setStatusCode(code)
